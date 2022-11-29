@@ -9,6 +9,7 @@
 #include "widgets/lineeditwidget.h"
 
 #include <networkmanagerqt/connectionsettings.h>
+#include <networkmanagerqt/wirelesssetting.h>
 
 using namespace NetworkManager;
 
@@ -17,7 +18,7 @@ class GenericHotspotSection : public AbstractSection
     Q_OBJECT
 
 public:
-    explicit GenericHotspotSection(ConnectionSettings::Ptr connSettings, QFrame *parent = nullptr);
+    explicit GenericHotspotSection(ConnectionSettings::Ptr connSettings, WirelessSetting::Ptr wirelessSetting, QFrame *parent = nullptr);
     virtual ~GenericHotspotSection() Q_DECL_OVERRIDE;
 
     bool allInputValid() Q_DECL_OVERRIDE;
@@ -30,6 +31,7 @@ private:
 private:
     LineEditWidget *m_connIdItem;
     ConnectionSettings::Ptr m_connSettings;
+    WirelessSetting::Ptr m_wirelessSetting;
 };
 
 #endif /* GENERICHOTSPOTSECTION_H */

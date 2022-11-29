@@ -9,10 +9,11 @@
 using namespace NetworkManager;
 using namespace dcc::widgets;
 
-GenericHotspotSection::GenericHotspotSection(ConnectionSettings::Ptr connSettings, QFrame *parent)
+GenericHotspotSection::GenericHotspotSection(ConnectionSettings::Ptr connSettings, WirelessSetting::Ptr wirelessSetting, QFrame *parent)
     : AbstractSection(tr("General"), parent)
     , m_connIdItem(new LineEditWidget(this))
     , m_connSettings(connSettings)
+    , m_wirelessSetting(wirelessSetting)
 {
     initUI();
 }
@@ -35,6 +36,7 @@ bool GenericHotspotSection::allInputValid()
 void GenericHotspotSection::saveSettings()
 {
     m_connSettings->setId(m_connIdItem->text());
+    m_wirelessSetting->setSsid(m_connIdItem->text().toUtf8());
 
     // hotspot connection should not be activated automatically by daemon
     m_connSettings->setAutoconnect(false);

@@ -27,7 +27,7 @@ void HotspotSettings::initSections()
     wirelessSetting->setMode(WirelessSetting::NetworkMode::Ap);
     wirelessSetting->setSecurity("802-11-wireless-security");
 
-    GenericHotspotSection *genericSection = new GenericHotspotSection(m_connSettings);
+    GenericHotspotSection *genericSection = new GenericHotspotSection(m_connSettings, wirelessSetting);
 
     SecretHotspotSection *secretHotspotSection = new SecretHotspotSection(
         m_connSettings->setting(Setting::SettingType::WirelessSecurity)

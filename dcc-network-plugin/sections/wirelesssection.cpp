@@ -70,7 +70,7 @@ bool WirelessSection::allInputValid()
 
 void WirelessSection::saveSettings()
 {
-    m_wirelessSetting->setSsid(m_ssid.toUtf8());
+    //m_wirelessSetting->setSsid(m_ssid.toUtf8());
 
     const QPair<QString, QString> &pair = m_macStrMap.value(m_deviceMacComboBox->currentText());
     QString hwAddr = pair.first;
