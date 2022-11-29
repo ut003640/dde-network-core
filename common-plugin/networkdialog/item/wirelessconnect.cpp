@@ -191,6 +191,10 @@ void WirelessConnect::setPassword(const QString &password)
                || keyMgmt == WirelessSecuritySetting::KeyMgmt::SAE) {
 #endif
         wsSetting->setPsk(password);
+
+        if (isHidden && keyMgmt == WirelessSecuritySetting::KeyMgmt::WpaPsk) {
+            wsSetting->setAuthAlg(WirelessSecuritySetting::AuthAlg::Open);
+        }
     }
     wsSetting->setInitialized(true);
     m_needUpdate = true;
