@@ -88,6 +88,7 @@ GETFUN(int, NetDeviceItem, pathIndex)
 GETFUN(const QString &, NetTipsItem, linkActivatedText)
 GETFUN(bool, NetTipsItem, tipsLinkEnabled)
 // 有线设备
+GETFUN(const QString &, NetWiredItem, portalUrl)
 
 // 无线设备
 GETFUN(bool, NetWirelessDeviceItem, apMode)
@@ -110,6 +111,7 @@ GETFUN(int, NetWirelessItem, strength)
 GETFUN(int, NetWirelessItem, strengthLevel)
 GETFUN(bool, NetWirelessItem, isSecure)
 GETFUN(bool, NetWirelessItem, hasConnection)
+GETFUN(const QString &, NetWirelessItem, portalUrl)
 
 QString NetWiredControlItem::name() const
 {

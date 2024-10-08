@@ -170,9 +170,14 @@ class NetWiredItemPrivate : public NetConnectionItemPrivate
 {
 public:
     NetType::NetItemType itemType() const override;
+    const QString & portalUrl() const;
+    void updateportalUrl(const QString &url);
 
 protected:
     using NetConnectionItemPrivate::NetConnectionItemPrivate;
+
+private:
+    QString m_portalUrl;
 };
 
 class NetWirelessMineItemPrivate : public NetItemPrivate
@@ -223,6 +228,8 @@ public:
     void updatestrength(int strength);
     void updatesecure(bool secure);
     void updatehasConnection(bool hasConnection);
+    const QString & portalUrl() const;
+    void updateportalUrl(const QString &url);
 
 protected:
     explicit NetWirelessItemPrivate();
@@ -233,6 +240,7 @@ private:
     int m_strengthLevel;
     bool m_secure;
     bool m_hasConnection;
+    QString m_portalUrl;
 
     friend class NetItemPrivate;
 };
