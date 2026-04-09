@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 - 2027 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2024 - 2026 UnionTech Software Technology Co., Ltd.
 // SPDX-License-Identifier: GPL-3.0-or-later
 import QtQuick 2.15
 import QtQuick.Controls 2.15
@@ -131,6 +131,16 @@ DccObject {
             addressData = []
         }
     }
+    function addAddressData(addr) {
+        addressData.push(addr)
+        addressDataChanged()
+        editClicked()
+    }
+    function removeAddressData(index) {
+        addressData.splice(index, 1)
+        addressDataChanged()
+        editClicked()
+    }
 
     name: "ipv4Title"
     displayName: qsTr("IPv4")
@@ -153,6 +163,8 @@ DccObject {
         }
         Label {
             visible: root.method === "manual"
+            bottomPadding: 0
+            font.pixelSize: D.DTK.fontManager.t8.pixelSize
             text: isEdit ? qsTr("Done") : qsTr("Edit")
             color: palette.link
             MouseArea {
@@ -244,11 +256,10 @@ DccObject {
             }
         }
     }
-    Component {
-        id: ipComponent
-        DccObject {
+    DccRepeater {
+        model: root.addressData
+        delegate: DccObject {
             id: ipv4Item
-            property int index: 0
             weight: root.weight + 30 + index
             name: "ipv4_" + index
             displayName: "IP-" + index
@@ -288,9 +299,7 @@ DccObject {
                             anchors.fill: parent
                             acceptedButtons: Qt.LeftButton
                             onClicked: {
-                                root.addressData.push(["0.0.0.0", "255.255.255.0", ""])
-                                root.addressDataChanged()
-                                root.editClicked()
+                                root.addAddressData(["0.0.0.0", "255.255.255.0", ""])
                             }
                         }
                     }
@@ -307,9 +316,7 @@ DccObject {
                             anchors.fill: parent
                             acceptedButtons: Qt.LeftButton
                             onClicked: {
-                                root.addressData.splice(index, 1)
-                                root.addressDataChanged()
-                                root.editClicked()
+                                root.removeAddressData(index)
                             }
                         }
                     }
@@ -420,20 +427,6 @@ DccObject {
                     }
                 }
             }
-        }
-    }
-    onAddressDataChanged: {
-        while (addressData.length > ipItems.length) {
-            let ipItem = ipComponent.createObject(root, {
-                                                      "index": ipItems.length
-                                                  })
-            DccApp.addObject(ipItem)
-            ipItems.push(ipItem)
-        }
-        while (addressData.length < ipItems.length) {
-            let tmpItem = ipItems.pop()
-            DccApp.removeObject(tmpItem)
-            tmpItem.destroy()
         }
     }
 }

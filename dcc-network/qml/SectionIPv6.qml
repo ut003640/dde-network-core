@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 - 2027 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2024 - 2026 UnionTech Software Technology Co., Ltd.
 // SPDX-License-Identifier: GPL-3.0-or-later
 import QtQuick 2.15
 import QtQuick.Controls 2.15
@@ -90,7 +90,7 @@ DccObject {
                     return false
                 }
                 // 检查网关
-                if (gateway[k].length !== 0) {
+                if (gateway[k] && gateway[k].length !== 0) {
                     gatewayCount++
                     if (gatewayCount >= 2) {
                         errorKey = k + "gateway"
@@ -98,7 +98,7 @@ DccObject {
                         return false
                     }
                 }
-                if (gateway[k].length !== 0 && !NetUtils.ipv6RegExp.test(gateway[k])) {
+                if (gateway[k] && gateway[k].length !== 0 && !NetUtils.ipv6RegExp.test(gateway[k])) {
                     errorKey = k + "gateway"
                     errorMsg = qsTr("Invalid gateway")
                     return false
@@ -120,6 +120,16 @@ DccObject {
         } else {
             addressData = []
         }
+    }
+    function addAddressData(addr) {
+        addressData.push(addr)
+        addressDataChanged()
+        editClicked()
+    }
+    function removeAddressData(index) {
+        addressData.splice(index, 1)
+        addressDataChanged()
+        editClicked()
     }
 
     ListModel {
@@ -179,6 +189,8 @@ DccObject {
         }
         Label {
             visible: root.method === "manual"
+            bottomPadding: 0
+            font.pixelSize: D.DTK.fontManager.t8.pixelSize
             text: isEdit ? qsTr("Done") : qsTr("Edit")
             color: palette.link
             MouseArea {
@@ -245,11 +257,10 @@ DccObject {
             }
         }
     }
-    Component {
-        id: ipComponent
-        DccObject {
+    DccRepeater {
+        model: root.addressData
+        delegate: DccObject {
             id: ipv6Item
-            property int index: 0
             weight: root.weight + 30 + index
             name: "ipv6_" + index
             visible: root.visible
@@ -290,12 +301,10 @@ DccObject {
                             anchors.fill: parent
                             acceptedButtons: Qt.LeftButton
                             onClicked: {
-                                root.addressData.push({
-                                                          "address": "",
-                                                          "prefix": 64
-                                                      })
-                                root.addressDataChanged()
-                                root.editClicked()
+                                root.addAddressData({
+                                                        "address": "",
+                                                        "prefix": 64
+                                                    })
                             }
                         }
                     }
@@ -312,9 +321,7 @@ DccObject {
                             anchors.fill: parent
                             acceptedButtons: Qt.LeftButton
                             onClicked: {
-                                root.addressData.splice(index, 1)
-                                root.addressDataChanged()
-                                root.editClicked()
+                                root.removeAddressData(index)
                             }
                         }
                     }
@@ -430,27 +437,6 @@ DccObject {
                     }
                 }
             }
-        }
-    }
-    function addIpItem() {
-        let ipItem = ipComponent.createObject(root, {
-                                                  "index": ipItems.length
-                                              })
-        DccApp.addObject(ipItem)
-        ipItems.push(ipItem)
-    }
-    function removeIpItem() {
-        let tmpItem = ipItems.pop()
-        DccApp.removeObject(tmpItem)
-        tmpItem.destroy()
-    }
-
-    onAddressDataChanged: {
-        while (root.addressData.length > ipItems.length) {
-            addIpItem()
-        }
-        while (root.addressData.length < ipItems.length) {
-            removeIpItem()
         }
     }
 }

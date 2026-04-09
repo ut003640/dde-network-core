@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2018 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2018 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -121,6 +121,7 @@ bool NetItemPrivate::addChild(NetItemPrivate *child, int index)
 
     Q_EMIT m_item->childAboutToBeAdded(m_item, index);
     m_children.insert(m_children.begin() + index, child->item());
+    child->m_item->setParent(m_item);
 
     child->m_parent = m_item;
     Q_EMIT m_item->childAdded(child->item());
@@ -137,6 +138,7 @@ bool NetItemPrivate::removeChild(NetItemPrivate *child)
     Q_EMIT m_item->childAboutToBeRemoved(m_item, it - m_children.begin());
     m_children.erase(it);
     child->m_parent = nullptr;
+    child->item()->setParent(nullptr);
     Q_EMIT m_item->childRemoved(child->item());
     Q_EMIT m_item->childrenChanged();
     return true;
@@ -242,6 +244,8 @@ NetConnectionItemPrivate::NetConnectionItemPrivate()
 }
 // 有线连接
 GETFUN(NetType::NetItemType, NetWiredItem, itemType, NetType::NetItemType::WiredItem)
+GETFUN(const QString &, NetWiredItem, portalUrl, m_portalUrl)
+UPDATEFUN(NetWiredItem, const QString &, portalUrl)
 // 我的网络
 GETFUN(NetType::NetItemType, NetWirelessMineItem, itemType, NetType::NetItemType::WirelessMineItem)
 // 其他网络
@@ -268,6 +272,8 @@ UPDATEFUN(NetWirelessItem, uint, flags)
 // UPDATEFUN(NetWirelessItem, int, strength)
 UPDATEFUN(NetWirelessItem, bool, secure)
 UPDATEFUN(NetWirelessItem, bool, hasConnection)
+GETFUN(const QString &, NetWirelessItem, portalUrl, m_portalUrl)
+UPDATEFUN(NetWirelessItem, const QString &, portalUrl)
 
 void NetWirelessItemPrivate::updatestrength(int strength)
 {

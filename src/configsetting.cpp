@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -18,7 +18,6 @@ ConfigSetting::ConfigSetting(QObject *parent)
     , m_alwaysFromNM(true)
     , m_loadServiceFromNM(false)
     , m_enableConnectivity(false)
-    , m_checkPortal(false)
     , m_supportCertifiedEscape(false)
     , m_showUnAuthorizeSwitch(true)
     , m_connectivityCheckInterval(30000)
@@ -32,6 +31,7 @@ ConfigSetting::ConfigSetting(QObject *parent)
     , m_showBrowserLink(false)
     , m_browserUrl("https://www.uniontech.com")
     , m_nobindEthernetMacDefault(false)
+    , m_portalProcessMode("promp")
 {
     QStringList keys;
     if (!dConfig)
@@ -51,6 +51,8 @@ ConfigSetting::ConfigSetting(QObject *parent)
             m_dontSetIpIfConflict = dConfig->value("dontSetIpIfConflict").toBool();
         if (keys.contains("wpaEapAuthmethod"))
             m_wpaEapAuthmethod = dConfig->value("wpaEapAuthmethod").toString();
+        if (keys.contains("portalProcessMode"))
+            m_portalProcessMode = dConfig->value("portalProcessMode").toString();
     }
     for (auto &&key : keys) {
         onValueChanged(key);
@@ -67,9 +69,6 @@ void ConfigSetting::onValueChanged(const QString &key)
     } else if (key == QString("enableConnectivity")) {
         m_enableConnectivity = dConfig->value("enableConnectivity").toBool();
         emit enableConnectivityChanged(m_enableConnectivity);
-    } else if (key == QString("checkPortal")) {
-        m_checkPortal = dConfig->value("checkPortal").toBool();
-        emit checkPortalChanged(m_checkPortal);
     } else if (key == QString("ConnectivityCheckInterval")) {
         m_connectivityCheckInterval = dConfig->value("ConnectivityCheckInterval").toInt() * 1000;
         emit connectivityCheckIntervalChanged(m_connectivityCheckInterval);
@@ -135,11 +134,6 @@ bool ConfigSetting::enableConnectivity() const
     return m_enableConnectivity;
 }
 
-bool ConfigSetting::checkPortal() const
-{
-    return m_checkPortal;
-}
-
 bool ConfigSetting::supportCertifiedEscape() const
 {
     return m_supportCertifiedEscape;
@@ -199,8 +193,13 @@ QString ConfigSetting::browserUrl() const
 {
     return m_browserUrl;
 }
-    
+
 bool ConfigSetting::nobindEthernetMacDefault() const
 {
     return m_nobindEthernetMacDefault;
+}
+
+bool ConfigSetting::supportPortalPromp() const
+{
+    return m_portalProcessMode.toLower().contains("promp");
 }

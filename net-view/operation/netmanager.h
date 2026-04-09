@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2018 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2018 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -34,6 +34,7 @@ public:
     void setAutoScanInterval(int ms);      // 设置自动扫描无线网间隔，0为不扫描
     void setAutoScanEnabled(bool enabled); // 设置自动扫描，网络面板关闭时禁用
     void setEnabled(bool enabled);         // 禁用时不发通知，不请求交互
+    NetType::NetManagerFlags flags() const;
 
     // const bool isGreeterMode() const;
     NetItem *root() const;
@@ -64,6 +65,7 @@ public:
         ImportError,       // 导入出错
         ExportConnect,     // 导出配置
         ShowPage,          // 查找配置 任务栏打开网络配置界面
+        OpenUrl            // 打开指定网页
     };
     Q_ENUM(CmdType)
 

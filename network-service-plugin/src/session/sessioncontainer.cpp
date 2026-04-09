@@ -1,14 +1,18 @@
-// SPDX-FileCopyrightText: 2024 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2024 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "sessioncontainer.h"
 #include "sessionipconfilct.h"
 #include "constants.h"
-#include "browserassist.h"
+#include "desktopmonitor.h"
+#include "settingconfig.h"
+#include "urlhelper.h"
 
 #include <QDBusConnection>
 #include <QDBusInterface>
+#include <QProcessEnvironment>
+#include <QProcess>
 
 using namespace network::sessionservice;
 
@@ -19,9 +23,10 @@ static QString networkInterface = "org.deepin.service.SystemNetwork";
 SessionContainer::SessionContainer(QObject *parent)
     : QObject (parent)
     , m_ipConflictHandler(new SessionIPConflict(this))
+    , m_desktopMonitor(new DesktopMonitor(this))
 {
-    initMember();
     initConnection();
+    initEnvornment();
 }
 
 SessionContainer::~SessionContainer()
@@ -39,9 +44,10 @@ void SessionContainer::initConnection()
     QDBusConnection::systemBus().connect(networkService, networkPath, networkInterface, "PortalDetected", this, SLOT(onPortalDetected(const QString &)));
     // 当系统代理发生变化的时候需要主动调用SystemNetwork服务的检查网络连通性的接口
     QDBusConnection::sessionBus().connect("org.deepin.dde.Network1", "/org/deepin/dde/Network1", "org.deepin.dde.Network1", "ProxyMethodChanged", this, SLOT(onProxyMethodChanged(const QString &)));
+    connect(m_desktopMonitor, &DesktopMonitor::desktopChanged, this, &SessionContainer::onDesktopChanged);
 }
 
-void SessionContainer::initMember()
+void SessionContainer::checkPortalUrl()
 {
     // 检测初始化的状态是否为门户认证，这种情况下需要先打开Url
     QDBusInterface dbusInter("org.deepin.service.SystemNetwork", "/org/deepin/service/SystemNetwork", "org.deepin.service.SystemNetwork", QDBusConnection::systemBus());
@@ -50,18 +56,59 @@ void SessionContainer::initMember()
         // 获取需要认证的网站的信息，并打开网页
         QString url = dbusInter.property("PortalUrl").toString();
         qCDebug(DSM) << "check portal url:" << url;
-        onPortalDetected(url);
+        openPortalUrl(url);
     }
+}
+
+void SessionContainer::initEnvornment()
+{
+    if (m_desktopMonitor->prepared())
+        enterDesktop();
+}
+
+void SessionContainer::enterDesktop()
+{
+    qCInfo(DSM) << "enter desktop";
+    // 进入桌面，检查本地portal连接
+    checkPortalUrl();
+}
+
+void SessionContainer::leaveDesktop()
+{
+    qCInfo(DSM) << "leave desktop";
+    // TODO: 注销后离开桌面
+}
+
+void SessionContainer::openPortalUrl(const QString &url)
+{
+    // 如果没有配置，则无需打开网页
+    if (!SettingConfig::instance()->supportAutoOpenPortal()) {
+        qCDebug(DSM) << "current portal process mode is not open";
+        return;
+    }
+
+    // 打开portal网页
+    UrlHelper urlHelper(m_desktopMonitor);
+    urlHelper.openUrl(url);
 }
 
 void SessionContainer::onIPConflictChanged(const QString &devicePath, const QString &ip, bool conflicted)
 {
     // TODO: 这里用于处理IP冲突，例如检测到IP冲突后，会给出提示的消息，等后期将任务栏种的相关处理删除后，再到这里来处理，目前此处暂时保留
+    Q_UNUSED(devicePath)
+    Q_UNUSED(ip)
+    Q_UNUSED(conflicted)
 }
 
 void SessionContainer::onPortalDetected(const QString &url)
 {
-    BrowserAssist::openUrl(url);
+    if (!m_desktopMonitor->prepared()) {
+        qCWarning(DSM) << "desktop is not login in";
+        return;
+    }
+
+    qCDebug(DSM) << "detacted portal url" << url;
+    openPortalUrl(url);
 }
 
 void SessionContainer::onProxyMethodChanged(const QString &method)
@@ -71,4 +118,9 @@ void SessionContainer::onProxyMethodChanged(const QString &method)
     QDBusInterface dbusInter("org.deepin.service.SystemNetwork", "/org/deepin/service/SystemNetwork", "org.deepin.service.SystemNetwork", QDBusConnection::systemBus());
     QDBusPendingCall callReply = dbusInter.asyncCall("CheckConnectivity");
     callReply.waitForFinished();
+}
+
+void SessionContainer::onDesktopChanged(bool isLogin)
+{
+    isLogin ? enterDesktop() : leaveDesktop();
 }

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -21,7 +21,6 @@ public:
 
     QStringList networkCheckerUrls() const; // 网络检测地址，用于检测网络连通性
     bool enableConnectivity() const;        // 是否开启或者禁用前端检测网络连通性的功能
-    bool checkPortal() const;               // 是否检测网络认证信息
     bool supportCertifiedEscape() const;    // 默认是否支持是否回退到未经授权的网络
     bool showUnAuthorizeSwitch() const;     // 是否显示回退到未经授权的网络的开关
     int connectivityCheckInterval() const;  // 网络连通性检测时间间隔
@@ -35,6 +34,7 @@ public:
     bool showBrowserLink() const;           // 显示打开浏览器的文字链接
     QString browserUrl() const;             // 文字链接打开浏览器时默认网址
     bool nobindEthernetMacDefault() const;  // 控制中心添加有线连接默认选择不绑定网卡
+    bool supportPortalPromp() const;        // 是否在任务栏给出
 
 signals:
     void checkUrlsChanged(const QStringList &);
@@ -61,7 +61,6 @@ private:
     bool m_alwaysFromNM;
     bool m_loadServiceFromNM;
     bool m_enableConnectivity;
-    bool m_checkPortal;
     bool m_supportCertifiedEscape;
     bool m_showUnAuthorizeSwitch;
     int m_connectivityCheckInterval;
@@ -76,6 +75,7 @@ private:
     bool m_showBrowserLink;
     QString m_browserUrl;
     bool m_nobindEthernetMacDefault;
+    QString m_portalProcessMode;
 };
 
 } // namespace network

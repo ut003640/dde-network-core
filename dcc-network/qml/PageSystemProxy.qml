@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 - 2027 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2024 - 2026 UnionTech Software Technology Co., Ltd.
 // SPDX-License-Identifier: GPL-3.0-or-later
 import QtQuick 2.15
 import QtQuick.Controls 2.15
@@ -83,7 +83,7 @@ DccObject {
                     }
                 }
                 Connections {
-                    target: item
+                    target: netItem
                     function onMethodChanged(m) {
                         method = m
                     }
@@ -249,7 +249,7 @@ DccObject {
                 parentName: root.name + "/menu/body"
                 displayName: qsTr("Ignore the proxy configurations for the above hosts and domains")
                 weight: 90
-                visible: ignoreHosts.visibleToApp
+                visible: ignoreHosts && ignoreHosts.visibleToApp
                 pageType: DccObject.Item
                 page: Label {
                     text: dccObj.displayName
