@@ -24,6 +24,8 @@ public:
     ~HttpManager() override = default;
     // 调用GET方法
     HttpReply *get(const QString &url);
+    // 绑定到指定网卡接口发送请求（用于检测单个网卡是否可以上网）
+    HttpReply *get(const QString &url, const QString &interfaceName);
 };
 
 /**

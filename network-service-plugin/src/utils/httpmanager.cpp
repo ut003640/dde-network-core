@@ -66,6 +66,11 @@ static int sockopt_callback(void *clientp, curl_socket_t sockfd, curlsocktype /*
 
 HttpReply *HttpManager::get(const QString &url)
 {
+    return get(url, QString());
+}
+
+HttpReply *HttpManager::get(const QString &url, const QString &interfaceName)
+{
     HttpReply *reply = new HttpReply(this);
     CURL *curl = curl_easy_init();
     if (!curl) {
@@ -98,8 +103,12 @@ HttpReply *HttpManager::get(const QString &url)
     sockCtx.rwTimeoutSec = static_cast<long>(SettingConfig::instance()->httpRequestTimeout());
     curl_easy_setopt(curl, CURLOPT_SOCKOPTFUNCTION, sockopt_callback);
     curl_easy_setopt(curl, CURLOPT_SOCKOPTDATA, &sockCtx);
+    // 绑定到指定网卡接口（用于检测单个网卡是否可以上网）
+    if (!interfaceName.isEmpty()) {
+        curl_easy_setopt(curl, CURLOPT_INTERFACE, interfaceName.toStdString().c_str());
+    }
     // 发送请求
-    qCDebug(DSM) << "Send request to" << url;
+    qCDebug(DSM) << "Send request to" << url << ", bind interface:" << (interfaceName.isEmpty() ? "default" : interfaceName);
     CURLcode curlRes = curl_easy_perform(curl);
     qCDebug(DSM) << "Request finished, ret:" << curlRes;
     if (curlRes == CURLE_OK) {

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "connectivitychecker.h"
+#include "internetchecker.h"
 
 #include "settingconfig.h"
 #include "httpmanager.h"
@@ -27,7 +28,11 @@ LocalConnectionvityChecker::LocalConnectionvityChecker(QObject *parent)
     , m_statusChecker(new StatusChecker)
     , m_connectivity(network::service::Connectivity::Unknownconnectivity)
     , m_thread(new QThread)
+    , m_internetChecker(nullptr)
 {
+    if (SettingConfig::instance()->needCheckNetwork()) {
+        m_internetChecker = new InternetChecker(this);
+    }
     m_statusChecker->moveToThread(m_thread);
     connect(m_statusChecker, &StatusChecker::portalDetected, this, &LocalConnectionvityChecker::onPortalDetected);
     connect(m_statusChecker, &StatusChecker::connectivityChanged, this, &LocalConnectionvityChecker::onConnectivityChanged);
@@ -80,6 +85,12 @@ void LocalConnectionvityChecker::onConnectivityChanged(network::service::Connect
         return;
 
     m_connectivity = connectivity;
+    if (m_internetChecker && (connectivity == network::service::Connectivity::Limited
+        || connectivity == network::service::Connectivity::Noconnectivity
+        || connectivity == network::service::Connectivity::Unknownconnectivity)) {
+        // 如果网络状态是full状态，并且支持检测网络是否真的能访问互联网，就检测一下网络是否真的能访问互联网
+        QMetaObject::invokeMethod(m_internetChecker, "switchInternetAccess", Qt::QueuedConnection);
+    }
     emit connectivityChanged(connectivity);
 }
 
