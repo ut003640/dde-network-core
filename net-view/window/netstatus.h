@@ -163,6 +163,7 @@ private:
     QTimer *m_animationTimer;
 
     bool m_networkActive;
+    bool m_allConnectingDisabled;
     QString m_quickTitle;
     QString m_quickDescription;
     QString m_quickIconStr;

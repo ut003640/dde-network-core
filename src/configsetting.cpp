@@ -32,8 +32,6 @@ ConfigSetting::ConfigSetting(QObject *parent)
     , m_browserUrl("https://www.uniontech.com")
     , m_nobindEthernetMacDefault(false)
     , m_portalProcessMode("promp")
-    , m_disableConnectingAnimation(false)
-    , m_disableAllNotify(false)
 {
     QStringList keys;
     if (!dConfig)
@@ -102,10 +100,10 @@ void ConfigSetting::onValueChanged(const QString &key)
         emit browserUrlChanged(m_browserUrl);
     } else if (key == "NobindEthernetMacDefault") {
         m_nobindEthernetMacDefault = dConfig->value("NobindEthernetMacDefault").toBool();
-    } else if (key == "disableConnectingAnimation") {
-        m_disableConnectingAnimation = dConfig->value("disableConnectingAnimation", false).toBool();
-    } else if (key == "disableAllNotify") {
-        m_disableAllNotify = dConfig->value("disableAllNotify", false).toBool();
+    } else if (key == "animationDisabledInterfaces") {
+        m_disableConnectingAnimation = dConfig->value("animationDisabledInterfaces").toString();
+    } else if (key == "disableNotifyInterfaces") {
+        m_disableAllNotify = dConfig->value("disableNotifyInterfaces").toString();
     }
 }
 
@@ -210,12 +208,30 @@ bool ConfigSetting::supportPortalPromp() const
     return m_portalProcessMode.toLower().contains("promp");
 }
 
-bool ConfigSetting::disableConnectingAnimation() const
+static bool isInterfaceInList(const QString &ifname, const QString &list)
 {
-    return m_disableConnectingAnimation;
+    if (list.isEmpty())
+        return false;
+    if (list == "all" || list == "true")
+        return true;
+    if (ifname.isEmpty()) {
+        // 无参数时仅检查是否为全局禁用(all/true)
+        return false;
+    }
+    const QStringList interfaces = list.split(",", Qt::SkipEmptyParts);
+    for (const QString &iface : interfaces) {
+        if (iface.trimmed() == ifname)
+            return true;
+    }
+    return false;
 }
 
-bool ConfigSetting::disableAllNotify() const
+bool ConfigSetting::isAnimationDisabled(const QString &ifname) const
 {
-    return m_disableAllNotify;
+    return isInterfaceInList(ifname, m_disableConnectingAnimation);
+}
+
+bool ConfigSetting::isNotifyDisabled(const QString &ifname) const
+{
+    return isInterfaceInList(ifname, m_disableAllNotify);
 }

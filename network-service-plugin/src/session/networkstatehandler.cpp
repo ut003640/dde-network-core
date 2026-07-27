@@ -288,6 +288,10 @@ void NetworkStateHandler::onStateChanged(const QString &devPath, NetworkManager:
         return;
     }
     qCDebug(DSM()) << device->interfaceName() << "device state changed," << oldState << "=>" << newState << ", reason" << reason << m_deviceErrorTable[reason];
+    if (SettingConfig::instance()->isNotifyDisabled(device->interfaceName())) {
+        qCDebug(DSM()) << "Notify disabled for interface:" << device->interfaceName();
+        return;
+    }
     QString id;
 
     DeviceStateInfo &dsi = m_devices[devPath];
@@ -650,7 +654,7 @@ void NetworkStateHandler::notify(const QString &icon, const QString &summary, co
         qCDebug(DSM()) << "notify disabled";
         return;
     }
-    if (SettingConfig::instance()->disableAllNotify()) {
+    if (SettingConfig::instance()->isNotifyDisabled()) {
         qCDebug(DSM()) << "disable all notify";
         return;
     }

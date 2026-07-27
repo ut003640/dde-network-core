@@ -69,9 +69,26 @@ bool SettingConfig::disableFailureNotify() const
     return m_disableFailureNotify;
 }
 
-bool SettingConfig::disableAllNotify() const
+static bool isInterfaceInList(const QString &ifname, const QString &list)
 {
-    return m_disableAllNotify;
+    if (list.isEmpty())
+        return false;
+    if (list == "all" || list == "true")
+        return true;
+    if (ifname.isEmpty()) {
+        return false;
+    }
+    const QStringList interfaces = list.split(",", Qt::SkipEmptyParts);
+    for (const QString &iface : interfaces) {
+        if (iface.trimmed() == ifname)
+            return true;
+    }
+    return false;
+}
+
+bool SettingConfig::isNotifyDisabled(const QString &ifname) const
+{
+    return isInterfaceInList(ifname, m_disableAllNotify);
 }
 
 int SettingConfig::resetWifiOSDEnableTimeout() const
@@ -119,8 +136,8 @@ void SettingConfig::onValueChanged(const QString &key)
     } else if (key == QString("disableFailureNotify")) {
         m_disableFailureNotify = dConfig->value("disableFailureNotify").toBool();
         emit disableFailureNotifyChanged(m_disableFailureNotify);
-    } else if (key == QString("disableAllNotify")) {
-        m_disableAllNotify = dConfig->value("disableAllNotify", false).toBool();
+    } else if (key == QString("disableNotifyInterfaces")) {
+        m_disableAllNotify = dConfig->value("disableNotifyInterfaces", "").toString();
     } else if (key == QString("resetWifiOSDEnableTimeout")) {
         m_resetWifiOSDEnableTimeout = dConfig->value("resetWifiOSDEnableTimeout").toInt();
         emit resetWifiOSDEnableTimeoutChanged(m_resetWifiOSDEnableTimeout);
@@ -147,7 +164,6 @@ SettingConfig::SettingConfig(QObject *parent)
     , m_disabledNetwork(false)
     , m_enableAccountNetwork(false)
     , m_disableFailureNotify(false)
-    , m_disableAllNotify(false)
     , m_resetWifiOSDEnableTimeout(300)
     , m_needCheckNetwork(true)
     , m_reapplyFlags(2)
@@ -195,8 +211,8 @@ SettingConfig::SettingConfig(QObject *parent)
         if (keys.contains("needCheckNetwork"))
             m_needCheckNetwork = dConfig->value("needCheckNetwork").toBool();
 
-        if (keys.contains("disableAllNotify"))
-            m_disableAllNotify = dConfig->value("disableAllNotify", false).toBool();
+        if (keys.contains("disableNotifyInterfaces"))
+            m_disableAllNotify = dConfig->value("disableNotifyInterfaces", "").toString();
 
         m_disableFailureNotify = dConfig->value("disableFailureNotify", false).toBool();
 

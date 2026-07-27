@@ -330,7 +330,7 @@ void NetManagerThreadPrivate::sendNotify(const QString &appIcon, const QString &
 {
     if (!m_enabled)
         return;
-    if (ConfigSetting::instance()->disableAllNotify())
+    if (ConfigSetting::instance()->isNotifyDisabled())
         return;
     Q_EMIT networkNotify(inAppName, replacesId, appIcon, summary, body, actions, hints, expireTimeout);
 }
@@ -2614,6 +2614,10 @@ void NetManagerThreadPrivate::onNotifyDeviceStatusChanged(NetworkManager::Device
         return;
     }
     auto *device = dynamic_cast<NetworkManager::Device *>(sender());
+    if (ConfigSetting::instance()->isNotifyDisabled(device->interfaceName())) {
+        qCDebug(DNC) << "Notify disabled for interface:" << device->interfaceName();
+        return;
+    }
     NetworkManager::ActiveConnection::Ptr conn = device->activeConnection();
     if (!conn.isNull()) {
         m_lastConnection = conn->id();

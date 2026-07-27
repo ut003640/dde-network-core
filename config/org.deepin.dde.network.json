@@ -361,25 +361,25 @@
              "permissions":"readwrite",
              "visibility":"private"
           },
-         "disableConnectingAnimation":{
-             "value":false,
+         "animationDisabledInterfaces":{
+             "value":"",
              "serial":0,
              "flags":[],
-             "name":"disableConnectingAnimation",
-             "name[zh_CN]":"禁用连接动画",
-             "description[zh_CN]":"当设置为true时，有线和无线网络在连接过程中不显示连接动画，保持未连接图标直到连接成功",
-             "description":"When set to true, wired and wireless network will not show connecting animation, keep disconnected icon until connected",
+             "name":"animationDisabledInterfaces",
+             "name[zh_CN]":"禁用连接动画的网卡列表",
+             "description[zh_CN]":"指定不显示连接动画的网卡接口名，多个用逗号分隔。空字符串表示不禁用，\"all\"表示禁用所有网卡的连接动画。例如：\"enp43s0\" 或 \"enp43s0,enp44s0\"",
+             "description":"Comma-separated list of interface names to disable connecting animation. Empty means no disabling, \"all\" means disable for all interfaces. e.g.: \"enp43s0\" or \"enp43s0,enp44s0\"",
              "permissions":"readwrite",
-              "visibility":"private"
-           },
-         "disableAllNotify":{
-             "value":false,
+             "visibility":"private"
+          },
+         "disableNotifyInterfaces":{
+             "value":"",
              "serial":0,
              "flags":["global"],
-             "name":"disableAllNotify",
-             "name[zh_CN]":"禁用所有网络通知",
-             "description[zh_CN]":"当设置为true时，禁用所有网络连接相关的通知消息，包括连接成功、连接失败、断开连接等",
-             "description":"When set to true, disable all network connection notifications, including connected, failed, disconnected, etc.",
+             "name":"disableNotifyInterfaces",
+             "name[zh_CN]":"禁用通知的网卡列表",
+             "description[zh_CN]":"指定不发送网络通知的网卡接口名，多个用逗号分隔。空字符串表示不禁用，\"all\"表示禁用所有网卡的网络通知。例如：\"enp43s0\" 或 \"enp43s0,enp44s0\"",
+             "description":"Comma-separated list of interface names to disable network notifications. Empty means no disabling, \"all\" means disable for all interfaces. e.g.: \"enp43s0\" or \"enp43s0,enp44s0\"",
              "permissions":"readwrite",
              "visibility":"private"
           }

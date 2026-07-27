@@ -22,7 +22,7 @@ public:
     bool disableNetwork() const;            // 是否禁用无线网络和蓝牙
     bool enableAccountNetwork() const;      // 是否开启用户私有网络(工银瑞信定制)
     bool disableFailureNotify() const;      // 当网络连接失败后,true:不弹出消息,false:弹出消息
-    bool disableAllNotify() const;          // 是否禁用所有网络通知
+    bool isNotifyDisabled(const QString &ifname = QString()) const; // 指定网卡是否禁用通知，空则检查是否全部禁用
     int resetWifiOSDEnableTimeout() const;  // 重新显示网络连接OSD超时
     int httpRequestTimeout() const;                 // HTTP请求超时时间（秒）
     int httpConnectTimeout() const;                 // HTTP连接超时时间（秒）
@@ -55,7 +55,7 @@ private:
     bool m_disabledNetwork;
     bool m_enableAccountNetwork;
     bool m_disableFailureNotify;
-    bool m_disableAllNotify;
+    QString m_disableAllNotify;
     int m_resetWifiOSDEnableTimeout;
     int m_httpRequestTimeout;
     int m_httpConnectTimeout;

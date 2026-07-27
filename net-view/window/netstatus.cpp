@@ -63,6 +63,7 @@ NetStatus::NetStatus(NetManager *manager, QObject *parent)
     , m_vpnAndProxyBut(nullptr)
     , m_tipsLabel(nullptr)
     , m_vpnAndProxyIconVisibel(true)
+    , m_allConnectingDisabled(false)
 {
     NetItem *root = m_manager->root();
     connect(root, &NetItem::childRemoved, this, &NetStatus::onChildRemoved);
@@ -579,23 +580,33 @@ void NetStatus::doUpdateStatus()
     iphtml[WIRED_DEVICE_INDEX].sort();
 
     unsigned netStatus = devStatus[WIRELESS_DEVICE_INDEX] | devStatus[WIRED_DEVICE_INDEX];
-    // 当禁用连接动画时，遍历所有网卡，如果有任意网卡已连接，则不让连接中状态覆盖已连接状态
-    if (ConfigSetting::instance()->disableConnectingAnimation()) {
-        bool hasConnectingState = (netStatus == NetType::DS_Connecting) ||
-                                  (netStatus == NetType::DS_ObtainingIP) ||
-                                  (netStatus == NetType::DS_Authenticating);
-        if (hasConnectingState) {
-            for (const auto &it : root->getChildren()) {
-                if (it->itemType() != NetType::WiredDeviceItem && it->itemType() != NetType::WirelessDeviceItem)
-                    continue;
+    // 当指定网卡禁用连接动画时，遍历所有网卡，如果有已连接的网卡，则不让连接中状态覆盖已连接状态
+    m_allConnectingDisabled = false;
 
-                NetDeviceItem *devItem = qobject_cast<NetDeviceItem *>(it);
-                if (!devItem || devItem->status() != NetType::DS_Connected)
-                    continue;
+    if ((netStatus == NetType::DS_Connecting) || (netStatus == NetType::DS_ObtainingIP) || (netStatus == NetType::DS_Authenticating)) {
+        bool allDisabled = true;
+        bool hasConnected = false;
+        for (const auto &it : root->getChildren()) {
+            if (it->itemType() != NetType::WiredDeviceItem && it->itemType() != NetType::WirelessDeviceItem)
+                continue;
 
-                netStatus = NetType::DS_Connected;
-                break;
+            NetDeviceItem *devItem = qobject_cast<NetDeviceItem *>(it);
+            if (!devItem)
+                continue;
+
+            if (devItem->status() == NetType::DS_Connected) {
+                hasConnected = true;
+            } else if (devItem->status() == NetType::DS_Connecting ||
+                        devItem->status() == NetType::DS_ObtainingIP ||
+                        devItem->status() == NetType::DS_Authenticating) {
+                if (!ConfigSetting::instance()->isAnimationDisabled(devItem->name())) {
+                    allDisabled = false;
+                }
             }
+        }
+        m_allConnectingDisabled = hasConnected && allDisabled;
+        if (m_allConnectingDisabled) {
+            netStatus = NetType::DS_Connected;
         }
     }
     bool isWirelessStatus = netStatus == devStatus[WIRELESS_DEVICE_INDEX];
@@ -824,7 +835,7 @@ void NetStatus::updateNetworkIcon()
         iconString = "network-none-symbolic";
         break;
     case NetworkStatus::Connecting: {
-        if (ConfigSetting::instance()->disableConnectingAnimation()) {
+        if (m_allConnectingDisabled) {
             iconString = "network-wireless-disconnect";
         } else {
             QStringList wirelessAnimation({
@@ -853,7 +864,7 @@ void NetStatus::updateNetworkIcon()
         }
     } break;
     case NetworkStatus::WirelessConnecting: {
-        if (ConfigSetting::instance()->disableConnectingAnimation()) {
+        if (m_allConnectingDisabled) {
             iconString = "network-wireless-disconnect";
         } else {
             m_animationIcon = QStringList({
@@ -867,7 +878,7 @@ void NetStatus::updateNetworkIcon()
         }
     } break;
     case NetworkStatus::WiredConnecting: {
-        if (ConfigSetting::instance()->disableConnectingAnimation()) {
+        if (m_allConnectingDisabled) {
             iconString = "network-none-symbolic";
         } else {
             m_animationIcon = QStringList({
@@ -970,7 +981,7 @@ void NetStatus::updateQuick(unsigned wirelessStatus, unsigned wiredStatus)
         case NetType::DS_ObtainingIP:
         case NetType::DS_Connecting:
             quickDescription = tr("Connecting");
-            if (ConfigSetting::instance()->disableConnectingAnimation()) {
+            if (m_allConnectingDisabled) {
                 quickIconStr = "network-wireless-disconnect";
             } else {
                 m_quickAnimationIcon = QStringList({
@@ -1034,7 +1045,7 @@ void NetStatus::updateQuick(unsigned wirelessStatus, unsigned wiredStatus)
         case NetType::DS_ObtainingIP:
         case NetType::DS_Connecting:
             quickDescription = tr("Connecting");
-            if (ConfigSetting::instance()->disableConnectingAnimation()) {
+            if (m_allConnectingDisabled) {
                 quickIconStr = "network-none-symbolic";
             } else {
                 m_quickAnimationIcon = QStringList({
